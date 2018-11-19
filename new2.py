@@ -150,21 +150,25 @@ def write_to_file(filename, list):
     f.close()
 
 
+def raise_errors_when_open_file(item):
+    try:
+        # f = open(filename, 'r')
+        file_content = open(item, 'r').read()
+    except PermissionError:
+        print("error: open(\"" + item + "\"): Permission denied")
+        print("error: unable to index file test")
+        print("fatal: adding files failed")
+        exit()
+    except FileNotFoundError:
+        print("fatal: pathspec '" + item + "' did not match any files")
+        exit()
+
+
 # this function adds files to objects dir and write to index
 def process_add_command(list_item):
     for item in list_item:
-        # try:
-        #     # f = open(filename, 'r')
-        #     file_content = open(item, 'r').read()
-        # except PermissionError:
-        #     print("error: open(\"" + item + "\"): Permission denied")
-        #     print("error: unable to index file test")
-        #     print("fatal: adding files failed")
-        #     exit()
-        # except FileNotFoundError:
-        #     print("fatal: pathspec '" + item + "' did not match any files")
-        #     exit()
         if os.path.isfile(item):
+            raise_errors_when_open_file(item)
             copy_file_to_objects(item)
             write_file_index(item)
         elif os.path.isdir(item):
@@ -201,6 +205,141 @@ def delete_content(filename):
     filename.seek(0)
     filename.truncate()
 
+def read_index():
+    f = open(index_path, 'r')
+    lines = f.readlines()
+    for line in lines:
+        file_name = line.split()[-1]
+        first_field = line[0:14]
+        second_field = line[15:55]
+        third_field = line[56:96]
+        fourth_field = line[97:137]
+    return file_name, first_field, second_field, third_field, fourth_field
+
+
+def list_all_files2():
+    all_files = []
+    list = os.listdir(path)
+    for item in list:
+        if os.path.isdir(os.path.join(path, item)):
+            all_files.append(item + "/")
+        else:
+            all_files.append(item)
+    all_files.remove('.lgit/')
+    return all_files
+
+
+def find_changes():
+    modified_files = []
+    deleted_files = []
+    f = open(index_path, 'r')
+    f_content = f.read()
+    # f.close()
+    lines = f_content.split('\n')
+    for line in lines:
+        # print(line)
+        if len(line) == 0:
+            # print("haha")
+            continue
+        # tracked_files = get_f_name_in_index()
+        tracked_file = line.split()[-1]
+        line_number = f_content.find(line)
+        # for tracked_file in tracked_files:
+
+        try:
+            # print(tracked_file)
+            # print("hei")
+            file_content = open(tracked_file, 'r').read()
+            sha1_file = convert_text_sha1(file_content)
+            file_mtime = get_timestamp(tracked_file)
+            if sha1_file != line.split()[1]:  # <==== Wrong
+                modified_files.append(tracked_file)
+            file = os.open(index_path, os.O_RDWR)
+            os.lseek(file, line_number, 0)
+            os.write(file, file_mtime.encode())
+            os.lseek(file, line_number + 15, 0)
+            os.write(file, sha1_file.encode())
+            os.close(file)
+        except FileNotFoundError:
+            deleted_files.append(tracked_file)
+    return modified_files, deleted_files
+
+
+def status():
+    all_files = list_all_files2()
+    untracked_files = []
+
+    #
+    # print(list)
+    print(all_files)
+    tracked_files = get_f_name_in_index()
+    print("tracked files:")
+    print(tracked_files)
+    modified_files, deleted_files = find_changes()
+    print("modified files:")
+    print(modified_files)
+    print("deleted files:")
+    print(deleted_files)
+    not_staged = []
+    to_be_committed = []
+    new = []
+#
+#
+    for file in all_files:
+        if file not in tracked_files:
+            untracked_files.append(file)
+    f = open(index_path, 'r')
+    lines = f.readlines()
+    for line in lines:
+        file_name = line.split()[-1]
+        first_field = line[0:14]
+        second_field = line[15:55]
+        third_field = line[56:96]
+        fourth_field = line[97:137]
+        # print("first", first_field)
+        # print("second", second_field)
+        # print("third", third_field)
+        # print("fourth", fourth_field)
+        if second_field != third_field:
+            not_staged.append(file_name)
+        if third_field != fourth_field:
+            to_be_committed.append(file_name)
+        if fourth_field == ' ' * 40:
+            new.append(file_name)
+
+
+    print("hey")
+    print(new)
+    print(not_staged)
+    print(to_be_committed)
+    print("yo")
+
+    print("On branch master\n\n")
+    if to_be_committed:
+        print("Initial commit\n\n")
+
+        print("Changes to be committed:\n  (use \033[93m \"./lgit.py reset HEAD ...\" \033[00m to unstage)\n")
+        for file in to_be_committed:
+            if file in new:
+                print("new file:   ", file)
+            elif file in modified_files:
+                print("modified:   ", file)
+            elif file in deleted_files:
+                print("deleted:   ", file)
+    if not_staged:
+        print("Changes not staged for commit:\n  (use \"./lgit.py ad ...\" to update what will be committed)\n(use \"./lgit.py checkout -- ...\" to discard changes in working directory)")
+        for file in not_staged:
+            if file in modified_files:
+                print("modified:   ", file)
+            elif file in deleted_files:
+                print("deleted:   ", file)
+    if untracked_files:
+        untracked_files.sort()
+        print("Untracked_files:\n  (use \"./lgit.py add <file>...\" to include in what will be committed\n\n)")
+        for file in untracked_files:
+            print(file)
+
+
 
 def main():
     global lgit_path, index_path, path
@@ -227,9 +366,7 @@ def main():
         process_rm_command(list_file_to_remove)
     elif 'config' in command:
         f_config = open('.lgit/config', 'w+')
-        new_str = author + '\n'
-        lst = new_str.split(' ')
-        f_config.write(lst[0])
+        f_config.write('%s\n' % (author))
         f_config.close()
     elif 'commit' in command:
         second = time.time()
@@ -255,7 +392,8 @@ def main():
         list = get_f_name_in_index()
         for i in list:
             print(i)
-
+    if "status" in command:
+        status()
 
 
 
