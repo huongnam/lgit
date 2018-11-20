@@ -1,0 +1,74 @@
+1) lgit core  Should show appropriate message (no commits yet + untracked files) after creating files in freshly initialised directory
+
+       expected "On branch master\n\n\nNo commits yet\n\n\n\n\nUntracked_files:\n  (use \"./lgit.py add <file>...\" t...xkdwrxtphfinknrzdm\nno changes added to commit (use \"./lgit.py add and/or \"./lgit.py commit -a)\n" to include "Untracked files:"
+       Diff:
+       @@ -1,2 +1,21 @@
+       -Untracked files:
+       +On branch master
+       +
+       +
+       +No commits yet
+       +
+       +
+       +
+       +
+       +Untracked_files:
+       +  (use "./lgit.py add <file>..." to include in what will be committed
+       +
+       +	 .git/
+       +	 README.md
+       +	 lgit.py
+       +	 new.py
+       +	 new2.py
+       +	 rendu.tar.gz
+       +	 team_agreement
+       +	 vsxkdwrxtphfinknrzdm
+       +no changes added to commit (use "./lgit.py add and/or "./lgit.py commit -a)
+
+  2) lgit core  should remove a file `lgit.py rm file`
+
+       expected: "vsxkdwrxtphfinknrzdm"
+            got: nil
+
+       (compared using ==)
+
+  3) lgit core  should list files `lgit.py ls-files`
+
+       expected: ""
+            got: "@@fatal: not a git repository (or any of the parent directories)\n"
+
+       (compared using ==)
+
+       Diff:
+       @@ -1 +1,2 @@
+       +@@fatal: not a git repository (or any of the parent directories)
+
+  4) lgit core  should list files from inner dir `../lgit.py ls-files`
+
+       expected: ""
+            got: "@@fatal: not a git repository (or any of the parent directories)\n"
+
+       (compared using ==)
+
+       Diff:
+       @@ -1 +1,2 @@
+       +@@fatal: not a git repository (or any of the parent directories)
+
+  5) lgit core  should list files from inner dir `./lgit.py log`
+
+       expected "Traceback (most recent call last):\n  File \"lgit.py\", line 484, in <module>\n    main()\n  File \"...rptime\n    (data_string, format))\nValueError: time data '' does not match format '%Y%m%d%H%M%S'\n" to match /commit.*author.*ojcvikhgxbruozyhowx.*date.*blgjphhhpwtqlthswj.*commit.*author.*saqkbenicpgpraxdmw.*date.*ywgapquqrnuftpucdiev/mi
+       Diff:
+       @@ -1,2 +1,13 @@
+       -/commit.*author.*ojcvikhgxbruozyhowx.*date.*blgjphhhpwtqlthswj.*commit.*author.*saqkbenicpgpraxdmw.*date.*ywgapquqrnuftpucdiev/mi
+       +Traceback (most recent call last):
+       +  File "lgit.py", line 484, in <module>
+       +    main()
+       +  File "lgit.py", line 477, in main
+       +    log()
+       +  File "lgit.py", line 409, in log
+       +    date = datetime.datetime.strptime(time_string, "%Y%m%d%H%M%S")
+       +  File "/usr/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+       +    tt, fraction = _strptime(data_string, format)
+       +  File "/usr/lib/python3.6/_strptime.py", line 362, in _strptime
+       +    (data_string, format))
+       +ValueError: time data '' does not match format '%Y%m%d%H%M%S'

@@ -39,18 +39,6 @@ def init():
         intial_git()
         # print("Initialized empty Git repository in " + lgit_path)
 
-# def init():
-#     if os.path.exists('.lgit'):
-#         if os.path.isdir('.lgit'):
-#             shutil.rmtree('.lgit')
-#             intial_git()
-#             print('Reinitialized existing Git repository in ' + lgit_path)
-#         elif os.path.isfile('.lgit'):
-#             print('fatal: Invalid gitfile format: ' + lgit_path)
-#     else:
-#         intial_git()
-        # print("Initialized empty Git repository in " + lgit_path)
-
 
 def intial_git():
     os.mkdir(lgit_path)
@@ -166,7 +154,8 @@ def format_file_index(file_in_cwd):
     # get dirname and filename to locate the file in objects directory
     dirname = sha1_cwd[:2]
     filename = sha1_cwd[2:]
-    content_objects = open(find_lgit + '/objects/' + dirname + '/' + filename).read()
+    content_objects = open(find_lgit + '/objects/' + dirname + '/' +
+                           filename).read()
     sha1_obj = convert_text_sha1(content_objects)
     # check if the file_in_cwd commit or not
     # --------------------------sai----------------
@@ -177,7 +166,8 @@ def format_file_index(file_in_cwd):
         for i in content_f_snapshots:
             if file_in_cwd == i[0].split()[-1]:
                 space = i[0].split()[0]
-    return [timestamp + ' ' + sha1_cwd + ' ' + sha1_obj + ' ' + space + ' ' + file_in_cwd]
+    return [timestamp + ' ' + sha1_cwd + ' ' + sha1_obj + ' ' + space +
+            ' ' + file_in_cwd]
 
 
 # this function adds files to objects dir and write to index
@@ -202,7 +192,7 @@ def delete_content(filename):
 
 
 # check function checks if a file already exists in index_ ---> return a list
-def check_exist_in_index(list): #[]
+def check_exist_in_index(list):
     content_index = convert_f_content_to_list(index_path)
     flag = 0
     name = list[0].split()[-1]
@@ -221,7 +211,8 @@ def process_rm_command(list_file_to_remove):
     # return error if file to remove not exist in index
     for i in list_file_to_remove:
         if i not in filename_index:
-            print('fatal: pathspec ' + '\'' + i + '\'' + ' did not match any files')
+            print('fatal: pathspec ' + '\'' + i + '\'' +
+                  ' did not match any files')
             return
     # get the filename in index --------> to remove afterwards
     f_name = []
@@ -246,7 +237,8 @@ def process_commit_command():
     config = open(find_lgit + '/config', 'r')
     msg = config.read()
     config.close()
-    file_in_commit.write(msg + '\n' + get_time[:-7] + '\n\n' + str(message) + '\n\n')
+    file_in_commit.write(msg + '\n' + get_time[:-7] + '\n\n' +
+                         str(message) + '\n\n')
     file_in_commit.close()
     # Empty snapshots_dir and create a new file --- sau khi go lenh commit
     if os.listdir(find_lgit + '/snapshots/') != []:
@@ -363,11 +355,12 @@ def status():
             new.append(file_name)
     print("On branch master\n\n")
     if len(os.listdir(commits_path)) == 0:
-        print("No commits yet\n\n")
+        print("No commits yet\n\n\n")
     if to_be_committed:
         print("Initial commit\n\n")
 
-        print("Changes to be committed:\n  (use \033[93m \"./lgit.py reset HEAD ...\" \033[00m to unstage)\n")
+        print("Changes to be committed:\n  (use \033[93m \"./lgit.py\
+              reset HEAD ...\" \033[00m to unstage)\n")
         for file in to_be_committed:
             if file in new:
                 print("\tnew file:   ", file)
@@ -376,7 +369,9 @@ def status():
             elif file in deleted_files:
                 print("\tdeleted:   ", file)
     if not_staged:
-        print("\nChanges not staged for commit:\n  (use \"./lgit.py ad ...\" to update what will be committed)\n  (use \"./lgit.py checkout -- ...\" to discard changes in working directory)")
+        print("\nChanges not staged for commit:\n  (use \"./lgit.py ad ...\" \
+              to update what will be committed)\n  (use \"./lgit.py\
+              checkout -- ...\" to discard changes in working directory)")
         for file in not_staged:
             if file in modified_files:
                 print("\tmodified:   ", file)
@@ -384,17 +379,20 @@ def status():
                 print("\tdeleted:   ", file)
     if untracked_files:
         untracked_files.sort()
-        print("\n\nUntracked_files:\n  (use \"./lgit.py add <file>...\" to include in what will be committed\n")
+        print("\nUntracked_files:\n  (use \"./lgit.py add <file>...\" to\
+              include in what will be committed\n")
         for file in untracked_files:
             print("\t", file)
     if not not_staged:
-        print("no changes added to commit (use \"./lgit.py add and/or \"./lgit.py commit -a"")")
+        print("no changes added to commit (use \"./lgit.py add and/or\
+              \"./lgit.py commit -a"")")
 
 
 def log():
     list_commits = os.listdir(commits_path)
     if len(list_commits) == 0:
-        print("fatal: your current branch 'master' does not have any commits yet")
+        print("fatal: your current branch 'master' does not have any commits\
+              yet")
         exit()
     list_commits.sort(reverse=True)
     for item in list_commits:
@@ -412,9 +410,9 @@ def log():
         print("commit", item)
         print("Author: ", author)
         print("Date: ", date)
-
         print("\n\t", message, "\n\n")
-#--------------------------------------------------
+# --------------------------------------------------
+
 
 def print_ls_files():
     path = os.getcwd()
@@ -445,8 +443,10 @@ def main():
     find_lgit = find_lgit_path()
 
     if find_lgit == '/':
-        if 'add' in command or 'rm' in command or 'config' in command or "status" in command or "log" in command:
-            print('fatal: not a git repository (or any of the parent directories)')
+        if 'add' in command or 'rm' in command or 'config' in command or\
+           "status" in command or "log" in command:
+            print('fatal: not a git repository (or any of the parent\
+                  directories)')
             exit()
     else:
         commits_path = os.path.join(find_lgit, 'commits')
@@ -458,8 +458,9 @@ def main():
         # ----------------------- thieu dien kien kiem tra file ton tai
         lst_cmd = command[1:]
         for f in lst_cmd:
-            if not os.path.isfile(f):
-                print('@@fatal: not a git repository (or any of the parent directories)')
+            if not os.path.isfile(f) and not os.path.isdir(f):
+                print('fatal: not a git repository (or any of the parent\
+                      directories)')
                 exit()
         process_add_command(lst_cmd)
     elif 'rm' in command:
@@ -477,7 +478,6 @@ def main():
         log()
     elif 'ls-files' in command:
         print_ls_files()
-
 
 
 if __name__ == '__main__':
