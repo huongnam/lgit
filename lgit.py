@@ -374,7 +374,7 @@ def status():
     if untracked_files:
         untracked_files.sort()
         print("\n\nUntracked_files:\n  (use \"./lgit.py add <file>...\" to "
-              "include in what will be committed\n")
+              "include \"Untracked files:\"\n")
         for file in untracked_files:
             print("\t", file)
     if not not_staged:
