@@ -392,19 +392,21 @@ def log():
     for item in list_commits:
         commit = os.path.join(commits_path, item)
         f = open(commit, 'r')
-        content = f.read().split("\n")
+        cont = f.read().split("\n")
         f.close()
-
+        content = []
+        for i in cont:
+            if i != '':
+                content.append(i)
         author = content[0]
         time_string = content[1]
         # human-readable date
         date = datetime.datetime.strptime(time_string, "%Y%m%d%H%M%S")
         date = date.strftime("%a %b %d %H:%M:%S %Y")
-        message = content[3]
+        message = content[2]
         print("commit", item)
         print("Author: ", author)
         print("Date: ", date)
-
         print("\n\t", message, "\n\n")
 
 
