@@ -145,6 +145,10 @@ def write_to_file(filename, list):
 # file_git_added, file_commited
 def format_file_index(file_in_cwd):
     # get the timestamp of the file -------------
+    file_write = os.path.abspath(file_in_cwd)
+    path_home = find_lgit_path()[:-5]
+    file_write = file_write.replace(path_home, '')
+    # print(file_in_cwd)
     timestamp = get_timestamp(file_in_cwd)[:-7]
     # read file in current working direc
     content_cwd = open(file_in_cwd, 'r').read()
@@ -165,11 +169,12 @@ def format_file_index(file_in_cwd):
             if file_in_cwd == i[0].split()[-1]:
                 space = i[0].split()[0]
     return [timestamp + ' ' + sha1_cwd + ' ' + sha1_obj + ' ' +
-            space + ' ' + file_in_cwd]
+            space + ' ' + file_write]
 
 
 # this function adds files to objects dir and write to index
 def process_add_command(list_item):
+    files = list_all_files(path)
     for item in list_item:
         if os.path.isfile(item):
             copy_file_to_objects(item)
@@ -179,6 +184,8 @@ def process_add_command(list_item):
         elif os.path.isdir(item):
             files = list_all_files(item)
             for file in files:
+                # print(os.path.abspath(file))
+                print(file)
                 copy_file_to_objects(file)
                 _file_code = format_file_index(file)
                 lst = check_exist_in_index(_file_code)
@@ -437,6 +444,8 @@ def main():
     lgit_path = os.getcwd() + '/' + '.lgit'
     find_lgit = find_lgit_path()
 
+    # print(os.path.abspath('dir/test'))
+    # print(find_lgit)
     if find_lgit == '/':
         if command != ['init']:
             print('fatal: not a git repository (or any of '
