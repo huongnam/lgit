@@ -178,10 +178,11 @@ def process_add_command(list_item):
             lst = check_exist_in_index(_item_code)
             write_to_file(index_path, lst)
         elif os.path.isdir(item):
+            files = list_all_files(item)
             for file in files:
                 copy_file_to_objects(file)
-                _item_code = format_file_index(item)
-                lst = check_exist_in_index(_item_code)
+                _file_code = format_file_index(file)
+                lst = check_exist_in_index(_file_code)
                 write_to_file(index_path, lst)
 
 
@@ -213,6 +214,7 @@ def process_rm_command(list_file_to_remove):
         if f not in list_file_to_remove:
             f_name.append(f)
         else:
+            print("rm \'" + f + "\'")
             os.remove(f)
     f = open(index_path, 'w')
     delete_content(f)
@@ -463,6 +465,7 @@ def main():
     elif 'rm' in command:
         list_file_to_remove = command[1:]
         filename_index = get_f_name_in_index()
+        # print(filename_index)
         for i in list_file_to_remove:
             if i not in filename_index:
                 print('fatal: pathspec ' + '\'' + i + '\'' + ' did not '
