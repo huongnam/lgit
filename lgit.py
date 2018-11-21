@@ -214,7 +214,6 @@ def process_rm_command(list_file_to_remove):
         if f not in list_file_to_remove:
             f_name.append(f)
         else:
-            print("rm \'" + f + "\'")
             os.remove(f)
     f = open(index_path, 'w')
     delete_content(f)
