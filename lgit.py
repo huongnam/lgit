@@ -29,7 +29,6 @@ def list_all_files(dirName):
 def init():
     if os.path.exists('.lgit'):
         if os.path.isdir('.lgit'):
-
             # print('Reinitialized existing Git repository in ' + lgit_path)
             print("Git repository already initialized.")
         elif os.path.isfile('.lgit'):
@@ -297,7 +296,6 @@ def find_changes():
     for line in lines:
         # print(line)
         if len(line) == 0:
-            # print("haha")
             continue
         # tracked_files = get_f_name_in_index()
         tracked_file = line.split()[-1]
@@ -388,7 +386,7 @@ def log():
     if len(list_commits) == 0:
         print("fatal: your current branch 'master' does not "
               "have any commits yet")
-        exit()
+        return
     list_commits.sort(reverse=True)
     for item in list_commits:
         commit = os.path.join(commits_path, item)
@@ -436,16 +434,14 @@ def main():
     command = process_agruments().command
     message = process_agruments().message
     author = process_agruments().author
-
-    lgit_path = os.path.abspath('.lgit')
-
+    lgit_path = os.getcwd() + '/' + '.lgit'
     find_lgit = find_lgit_path()
 
     if find_lgit == '/':
         if command != ['init']:
             print('fatal: not a git repository (or any of '
                   'the parent directories)')
-            exit()
+            return
     else:
         commits_path = os.path.join(find_lgit, 'commits')
         index_path = os.path.join(find_lgit, 'index')
@@ -459,7 +455,7 @@ def main():
             if not os.path.isfile(f) and not os.path.isdir(f):
                 print('fatal: not a git repository (or any of '
                       'the parent directories)')
-                exit()
+                return
         process_add_command(lst_cmd)
     elif 'rm' in command:
         list_file_to_remove = command[1:]
@@ -469,7 +465,7 @@ def main():
             if i not in filename_index:
                 print('fatal: pathspec ' + '\'' + i + '\'' + ' did not '
                       'match any files')
-                exit()
+                return
         process_rm_command(list_file_to_remove)
     elif 'config' in command:
         f_config = open('.lgit/config', 'w+')
@@ -483,7 +479,7 @@ def main():
         log()
     elif 'ls-files' in command:
         if find_lgit == '/':
-            exit()
+            return
         print_ls_files()
 
 
