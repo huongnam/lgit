@@ -29,6 +29,7 @@ def list_all_files(dirName):
 def init():
     if os.path.exists('.lgit'):
         if os.path.isdir('.lgit'):
+
             # print('Reinitialized existing Git repository in ' + lgit_path)
             print("Git repository already initialized.")
         elif os.path.isfile('.lgit'):
@@ -144,11 +145,8 @@ def write_to_file(filename, list):
 
 # file_git_added, file_commited
 def format_file_index(file_in_cwd):
-    # get the timestamp of the file -------------
-    file_write = os.path.abspath(file_in_cwd)
     path_home = find_lgit_path()[:-5]
-    file_write = file_write.replace(path_home, '')
-    # print(file_in_cwd)
+    file_write = file_in_cwd.replace(path_home, '')
     timestamp = get_timestamp(file_in_cwd)[:-7]
     # read file in current working direc
     content_cwd = open(file_in_cwd, 'r').read()
@@ -174,7 +172,6 @@ def format_file_index(file_in_cwd):
 
 # this function adds files to objects dir and write to index
 def process_add_command(list_item):
-    files = list_all_files(path)
     for item in list_item:
         if os.path.isfile(item):
             copy_file_to_objects(item)
@@ -184,8 +181,6 @@ def process_add_command(list_item):
         elif os.path.isdir(item):
             files = list_all_files(item)
             for file in files:
-                # print(os.path.abspath(file))
-                print(file)
                 copy_file_to_objects(file)
                 _file_code = format_file_index(file)
                 lst = check_exist_in_index(_file_code)
@@ -214,19 +209,20 @@ def check_exist_in_index(list):
 def process_rm_command(list_file_to_remove):
     lst = convert_f_content_to_list(index_path)
     filename_index = get_f_name_in_index()
+    path_home = find_lgit_path()[:-5]
     # get the filename in index --------> to remove afterwards
     f_name = []
     for f in filename_index:
         if f not in list_file_to_remove:
             f_name.append(f)
         else:
-            os.remove(f)
+            os.remove(os.path.join(path_home, f))
     f = open(index_path, 'w')
     delete_content(f)
     ls_rong = []
     if f_name != []:
         for f in f_name:
-            _item_code = format_file_index(f)
+            _item_code = format_file_index(os.path.join(path_home, f))
             ls_rong.append(_item_code)
     write_to_file(index_path, ls_rong)
 
@@ -303,6 +299,7 @@ def find_changes():
     for line in lines:
         # print(line)
         if len(line) == 0:
+            # print("haha")
             continue
         # tracked_files = get_f_name_in_index()
         tracked_file = line.split()[-1]
@@ -393,7 +390,7 @@ def log():
     if len(list_commits) == 0:
         print("fatal: your current branch 'master' does not "
               "have any commits yet")
-        return
+        exit()
     list_commits.sort(reverse=True)
     for item in list_commits:
         commit = os.path.join(commits_path, item)
@@ -418,16 +415,15 @@ def log():
 
 def print_ls_files():
     path = os.getcwd()
-    # print(os.listdir(path))
+    path_home = find_lgit_path()[:-5]
     list_result = []
     files = list_all_files(path)
     fname_index = get_f_name_in_index()
-    for i in fname_index:
-        for f in files:
-            if i in f:
-                index = f.split(path)[1][1:]
-                if index not in list_result:
-                    list_result.append(index)
+    for f in range(len(files)):
+        files[f] = files[f].replace(path_home, '')
+    for i in files:
+        if i in fname_index:
+            list_result.append(i)
     list_result = sorted(list_result)
     if list_result != []:
         print('\n'.join(list_result))
@@ -441,16 +437,16 @@ def main():
     command = process_agruments().command
     message = process_agruments().message
     author = process_agruments().author
-    lgit_path = os.getcwd() + '/' + '.lgit'
+
+    lgit_path = os.path.abspath('.lgit')
+
     find_lgit = find_lgit_path()
 
-    # print(os.path.abspath('dir/test'))
-    # print(find_lgit)
     if find_lgit == '/':
         if command != ['init']:
             print('fatal: not a git repository (or any of '
                   'the parent directories)')
-            return
+            exit()
     else:
         commits_path = os.path.join(find_lgit, 'commits')
         index_path = os.path.join(find_lgit, 'index')
@@ -458,24 +454,30 @@ def main():
         init()
     elif 'add' in command:
         # ----- copy file to .lgit/objects/
-        # ----------------------- thieu dien kien kiem tra file ton tai
         lst_cmd = command[1:]
+        fullpath = find_lgit_path()[:-5]
+        for i in range(len(lst_cmd)):
+            lst_cmd[i] = os.path.abspath(lst_cmd[i])
         for f in lst_cmd:
             if not os.path.isfile(f) and not os.path.isdir(f):
                 print('fatal: not a git repository (or any of '
                       'the parent directories)')
-                return
+                exit()
         process_add_command(lst_cmd)
     elif 'rm' in command:
-        list_file_to_remove = command[1:]
+        l_file_to_remove = command[1:]
         filename_index = get_f_name_in_index()
-        # print(filename_index)
-        for i in list_file_to_remove:
+        fullpath = find_lgit_path()[:-5]
+        for i in range(len(l_file_to_remove)):
+            l_file_to_remove[i] = os.path.abspath(l_file_to_remove[i])
+            l_file_to_remove[i] = l_file_to_remove[i].replace(fullpath, '')
+        # print(l_file_to_remove)
+        for i in l_file_to_remove:
             if i not in filename_index:
                 print('fatal: pathspec ' + '\'' + i + '\'' + ' did not '
                       'match any files')
-                return
-        process_rm_command(list_file_to_remove)
+                exit()
+        process_rm_command(l_file_to_remove)
     elif 'config' in command:
         f_config = open('.lgit/config', 'w+')
         f_config.write('%s\n' % (author))
@@ -488,7 +490,7 @@ def main():
         log()
     elif 'ls-files' in command:
         if find_lgit == '/':
-            return
+            exit()
         print_ls_files()
 
 
