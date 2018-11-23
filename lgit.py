@@ -279,13 +279,14 @@ def process_commit_command():
 # --------------------------------------
 def list_all_files2():
     all_files = []
-    list = os.listdir(path)
+    list = os.listdir(find_lgit[:-5])
     for item in list:
-        if os.path.isdir(os.path.join(path, item)):
+        if os.path.isdir(os.path.join(find_lgit[:-5], item)):
             all_files.append(item + "/")
         else:
             all_files.append(item)
-    all_files.remove('.lgit/')
+    if os.path.exists(find_lgit[:-5] + '/.lgit'):
+        all_files.remove('.lgit/')
     return all_files
 
 
@@ -308,6 +309,9 @@ def find_changes():
         try:
             # print(tracked_file)
             # print("hei")
+            # os.path.join(find_lgit[:-5])
+            if os.getcwd() is not find_lgit_path()[:-5]:
+                os.chdir(find_lgit_path()[:-5])
             file_content = open(tracked_file, 'r').read()
             sha1_file = convert_text_sha1(file_content)
             file_mtime = get_timestamp(tracked_file)[:14] + " "
@@ -381,7 +385,7 @@ def status():
         for file in untracked_files:
             print("\t", file)
     if not not_staged:
-        print("no changes added to commit (use \"./lgit.py add "
+        print("\nno changes added to commit (use \"./lgit.py add "
               "and/or \"./lgit.py commit -a"")")
 
 
